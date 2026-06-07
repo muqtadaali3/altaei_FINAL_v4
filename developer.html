@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>لوحة المطوّر</title>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#2ea043;--green-l:#3fb950;--blue:#1f6feb;--blue-l:#58a6ff;--gold:#d29922;--gold-l:#f0c040;--red:#da3633;--red-l:#f85149;--purple:#7c3aed;--purple-l:#a78bfa;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#ls{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(22,163,74,.06) 55%,var(--bg));display:flex;align-items:center;justify-content:center;z-index:999}
+.lb{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:360px;text-align:center}
+.lb .icon{font-size:3rem;margin-bottom:1rem}
+.lb h1{color:var(--green-l);font-size:1.5rem;margin-bottom:.3rem}
+.lb p{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+.lb input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-size:1rem;margin-bottom:.8rem;text-align:center;letter-spacing:.1em}
+.lb input:focus{outline:none;border-color:var(--green)}
+.lb button{width:100%;background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:1rem;font-weight:700;cursor:pointer}
+#le{color:var(--red-l);font-size:.82rem;margin-top:.5rem;min-height:1.2rem}
+#app{display:none;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-title{font-weight:700;color:var(--green-l);font-size:1rem;display:flex;align-items:center;gap:.5rem}
+.srv-badge{padding:.2rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);color:var(--green-l)}
+.logout-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:.35rem .8rem;font-size:.78rem;cursor:pointer;font-family:inherit}
+.logout-btn:hover{color:var(--red-l);border-color:var(--red)}
+.wrap{max-width:1000px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+.stat-n{font-size:1.8rem;font-weight:900;line-height:1}
+.stat-l{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+.c-green{color:var(--green-l)}.c-gold{color:var(--gold-l)}.c-red{color:var(--red-l)}.c-blue{color:var(--blue-l)}
+.tabs{display:flex;gap:.5rem;margin-bottom:1.2rem;overflow-x:auto;padding-bottom:.3rem}
+.tab{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.45rem 1rem;font-size:.82rem;cursor:pointer;font-family:inherit;color:var(--muted);white-space:nowrap;transition:all .2s}
+.tab.on{background:rgba(31,111,235,.15);border-color:var(--blue);color:var(--blue-l)}
+.rest-grid{display:grid;gap:1rem}
+.rest-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem}
+.rest-card.disabled{border-left:3px solid var(--red)}
+.rest-card.expiring{border-left:3px solid var(--gold)}
+.rest-card.active{border-left:3px solid var(--green)}
+.rc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;margin-bottom:.8rem;flex-wrap:wrap}
+.rc-name{font-weight:700;font-size:1rem}
+.rc-rid{font-size:.75rem;color:var(--muted);font-family:monospace;margin-top:.15rem}
+.rc-badges{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.b-green{background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);color:var(--green-l)}
+.b-gold{background:rgba(210,153,34,.12);border:1px solid rgba(210,153,34,.3);color:var(--gold-l)}
+.b-red{background:rgba(218,54,51,.12);border:1px solid rgba(218,54,51,.3);color:var(--red-l)}
+.b-blue{background:rgba(31,111,235,.12);border:1px solid rgba(31,111,235,.3);color:var(--blue-l)}
+.rc-info{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;font-size:.8rem;color:var(--muted);margin-bottom:.9rem}
+.rc-info strong{color:var(--text)}
+.rc-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn{border:none;border-radius:8px;padding:.45rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:.3rem}
+.btn-toggle-off{background:rgba(218,54,51,.15);border:1px solid rgba(218,54,51,.3);color:var(--red-l)}
+.btn-toggle-off:hover{background:rgba(218,54,51,.25)}
+.btn-toggle-on{background:rgba(46,160,67,.15);border:1px solid rgba(46,160,67,.3);color:var(--green-l)}
+.btn-toggle-on:hover{background:rgba(46,160,67,.25)}
+.btn-renew{background:rgba(210,153,34,.12);border:1px solid rgba(210,153,34,.3);color:var(--gold-l)}
+.btn-renew:hover{background:rgba(210,153,34,.22)}
+.btn-del{background:rgba(218,54,51,.08);border:1px solid rgba(218,54,51,.2);color:var(--red-l)}
+.btn-ghost{background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{color:var(--text)}
+.key-display{font-family:monospace;font-size:.75rem;color:var(--gold-l);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:.2rem .5rem}
+.add-box{background:var(--bg2);border:2px dashed var(--border);border-radius:14px;padding:1.4rem}
+.add-box h3{color:var(--green-l);margin-bottom:1rem;font-size:.95rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+.fg{display:flex;flex-direction:column;gap:.3rem}
+.fg label{font-size:.75rem;color:var(--muted)}
+.fg input,.fg select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;color:var(--text);font-size:.85rem;font-family:inherit}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--blue)}
+.fg select option{background:var(--bg2)}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;border:none;border-radius:10px;padding:.75rem;font-size:.92rem;font-weight:700;cursor:pointer;margin-top:.8rem;font-family:inherit}
+.result-box{background:rgba(46,160,67,.06);border:1px solid rgba(46,160,67,.3);border-radius:12px;padding:1.1rem 1.3rem;margin-top:1rem;display:none}
+.result-box h4{color:var(--green-l);margin-bottom:.6rem;font-size:.88rem}
+.result-key{font-family:monospace;font-size:1.1rem;color:var(--gold-l);font-weight:900;letter-spacing:.05em;cursor:pointer;margin-bottom:.6rem}
+.result-info{font-size:.78rem;color:var(--muted);line-height:1.9}
+.result-info code{color:var(--gold-l);background:var(--bg3);padding:.1rem .4rem;border-radius:4px;font-family:monospace}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.5rem;width:360px;max-width:100%}
+.modal h3{margin-bottom:1rem;font-size:1rem;color:var(--gold-l)}
+.modal select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.65rem;color:var(--text);font-family:inherit;font-size:.88rem;margin-bottom:.8rem}
+.modal-btns{display:flex;gap:.6rem}
+.modal-btns button{flex:1;border:none;border-radius:8px;padding:.65rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit}
+.modal-ok{background:var(--gold);color:#000}
+.modal-cancel{background:var(--bg3);color:var(--muted);border:1px solid var(--border)!important}
+.settings-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.4rem}
+.settings-box h3{color:var(--gold-l);margin-bottom:1rem;font-size:.95rem}
+#pm{font-size:.8rem;min-height:1.1rem;margin-top:.3rem}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1f2937;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:.7rem 1.3rem;font-size:.85rem;z-index:999;transition:transform .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+code{background:var(--bg3);border-radius:4px;padding:.1rem .4rem;font-family:'Courier New',monospace;color:var(--blue-l);font-size:.82rem}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lb">
+    <div class="icon">💻</div>
+    <h1>لوحة المطوّر</h1>
+    <p>نظام إدارة اشتراكات المطاعم</p>
+    <input type="password" id="devPI" placeholder="كلمة سر المطوّر" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button onclick="doLogin()">🔑 دخول</button>
+    <div id="le"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-title">🍽️ لوحة المطوّر</div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span class="srv-badge">⚡ متصل</span>
+      <button class="logout-btn" onclick="logout()">خروج</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="stat-n c-blue" id="stTotal">—</div><div class="stat-l">المطاعم</div></div>
+      <div class="stat"><div class="stat-n c-green" id="stActive">—</div><div class="stat-l">نشط</div></div>
+      <div class="stat"><div class="stat-n c-gold" id="stExpiring">—</div><div class="stat-l">ينتهي قريباً</div></div>
+      <div class="stat"><div class="stat-n c-red" id="stDisabled">—</div><div class="stat-l">موقوف/منتهي</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('list',this)">🏪 المطاعم</button>
+      <button class="tab" onclick="switchTab('add',this)">➕ إضافة مطعم</button>
+      <button class="tab" onclick="switchTab('settings',this)">⚙️ الإعدادات</button>
+      <button class="tab" onclick="switchTab('backup',this)">💾 نسخ احتياطي</button>
+    </div>
+
+    <!-- قائمة المطاعم -->
+    <div id="tab-list">
+      <div id="restList"><div style="text-align:center;color:var(--muted);padding:2rem">جاري التحميل...</div></div>
+    </div>
+
+    <!-- إضافة مطعم -->
+    <div id="tab-add" style="display:none">
+      <div class="add-box">
+        <h3>➕ تسجيل مطعم جديد</h3>
+        <div class="form-grid">
+          <div class="fg"><label>اسم المطعم *</label><input id="fClient" placeholder="مطعم الرشيد"/></div>
+          <div class="fg"><label>معرّف المطعم (rid) *</label><input id="fRid" placeholder="rashid" style="direction:ltr"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="fg"><label>اسم المستخدم *</label><input id="fUser" placeholder="اسم الدخول للأدمن" style="direction:ltr"/></div>
+          <div class="fg"><label>كلمة مرور الأدمن *</label><input id="fPass" type="password" placeholder="كلمة سر صاحب المطعم"/></div>
+        </div>
+        <div class="form-grid">
+          <div class="fg"><label>رقم الهاتف</label><input id="fPhone" placeholder="07XX-XXX-XXXX"/></div>
+          <div class="fg"><label>نوع الاشتراك</label>
+            <select id="fType">
+              <option value="daily">يومي — 1 يوم</option>
+              <option value="monthly" selected>شهري — 30 يوم</option>
+              <option value="2months">شهرين — 60 يوم</option>
+              <option value="3months">3 أشهر — 90 يوم</option>
+              <option value="6months">6 أشهر — 180 يوم</option>
+              <option value="yearly">سنوي — 365 يوم</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg" style="margin-top:.4rem"><label>ملاحظات</label><input id="fNote" placeholder="أي ملاحظة اختيارية"/></div>
+        <button class="submit-btn" onclick="addRestaurant()">⚡ إنشاء الحساب والاشتراك</button>
+        <div class="result-box" id="resultBox">
+          <h4>✅ تم إنشاء الحساب بنجاح!</h4>
+          <div class="result-key" id="resultKey" onclick="copyText(this.textContent)" title="اضغط للنسخ"></div>
+          <div class="result-info" id="resultInfo"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div id="tab-settings" style="display:none">
+      <div class="settings-box">
+        <h3>🔑 تغيير كلمة مرور المطوّر</h3>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:.8rem">بعد التغيير استخدم كلمة المرور الجديدة في المرة القادمة</p>
+        <input type="password" id="np1" placeholder="كلمة المرور الجديدة" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:inherit;font-size:.88rem;margin-bottom:.6rem"/>
+        <input type="password" id="np2" placeholder="تأكيد كلمة المرور" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:inherit;font-size:.88rem;margin-bottom:.6rem"/>
+        <button onclick="chPass()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem 1.1rem;font-size:.82rem;cursor:pointer;font-family:inherit;font-weight:700">حفظ كلمة المرور</button>
+        <div id="pm"></div>
+        <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem">
+          <p style="color:var(--muted);font-size:.8rem">⚠️ لتطبيق تغيير كلمة المرور بشكل دائم، حدّث متغير <code>DEV_PASS</code> في إعدادات Railway.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- نسخ احتياطي -->
+    <div id="tab-backup" style="display:none">
+      <div class="settings-box">
+        <h3>💾 النسخ الاحتياطي والاستعادة</h3>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:1.2rem">
+          احفظ نسخة من جميع بيانات المطاعم والاشتراكات والطلبات. استعد النسخة في حالة فقدان البيانات.
+        </p>
+
+        <!-- تصدير -->
+        <div style="background:rgba(46,160,67,.06);border:1px solid rgba(46,160,67,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem">
+          <div style="font-size:.88rem;font-weight:700;color:var(--green-l);margin-bottom:.4rem">📤 تصدير النسخة الاحتياطية</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">تحميل ملف JSON يحتوي على كل البيانات (اشتراكات + مطاعم + طلبات)</div>
+          <button onclick="exportBackup()" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:.55rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit">⬇️ تحميل النسخة الاحتياطية</button>
+        </div>
+
+        <!-- استعادة -->
+        <div style="background:rgba(210,153,34,.06);border:1px solid rgba(210,153,34,.2);border-radius:12px;padding:1rem 1.2rem">
+          <div style="font-size:.88rem;font-weight:700;color:var(--gold-l);margin-bottom:.4rem">📥 استعادة من نسخة احتياطية</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">
+            ⚠️ سيستبدل البيانات الحالية بالكامل — تأكد من تصدير نسخة أولاً
+          </div>
+          <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(this)"/>
+          <button onclick="document.getElementById('restoreFile').click()" style="background:rgba(210,153,34,.2);border:1px solid rgba(210,153,34,.4);color:var(--gold-l);border-radius:8px;padding:.55rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit">📂 اختيار ملف النسخة الاحتياطية</button>
+        </div>
+
+        <!-- معلومات مهمة -->
+        <div style="margin-top:1.2rem;background:rgba(31,111,235,.06);border:1px solid rgba(31,111,235,.2);border-radius:12px;padding:1rem 1.2rem">
+          <div style="font-size:.82rem;font-weight:700;color:var(--blue-l);margin-bottom:.5rem">ℹ️ كيف تحافظ على البيانات دائماً</div>
+          <ol style="font-size:.78rem;color:var(--muted);line-height:2;padding-right:1.2rem">
+            <li>في Railway → اضغط على مشروعك → <strong style="color:var(--text)">Volumes</strong></li>
+            <li>اضغط <strong style="color:var(--text)">+ New Volume</strong></li>
+            <li>Mount Path: <code style="color:var(--blue-l)">/data</code></li>
+            <li>اضغط <strong style="color:var(--text)">Add Volume</strong></li>
+            <li>أعد نشر المشروع مرة واحدة</li>
+          </ol>
+          <div style="font-size:.75rem;color:var(--green-l);margin-top:.5rem">✅ بعد هذه الخطوة البيانات تبقى للأبد حتى لو رفعت تحديثات</div>
+        </div>
+      </div>
+    </div>
+
+<!-- RENEW MODAL -->
+<div class="modal-bg" id="renewModal">
+  <div class="modal">
+    <h3>🔄 تجديد الاشتراك</h3>
+    <p style="color:var(--muted);font-size:.82rem;margin-bottom:.8rem" id="renewName"></p>
+    <select id="renewType">
+      <option value="monthly">شهري — 30 يوم</option>
+      <option value="2months">شهرين — 60 يوم</option>
+      <option value="3months">3 أشهر — 90 يوم</option>
+      <option value="6months">6 أشهر — 180 يوم</option>
+      <option value="yearly">سنوي — 365 يوم</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-ok" onclick="confirmRenew()">✅ تجديد</button>
+      <button class="modal-cancel" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SRV=window.location.origin;
+let DEV_PASS='', _renewRid='';
+
+async function api(method,path,b){
+  const r=await fetch(SRV+path,{method,headers:{'Content-Type':'application/json','X-Dev-Pass':DEV_PASS},...(b?{body:JSON.stringify(b)}:{})});
+  return r.json();
+}
+
+async function doLogin(){
+  const p=document.getElementById('devPI').value.trim();
+  if(!p){document.getElementById('le').textContent='أدخل كلمة المرور';return;}
+  DEV_PASS=p;
+  const r=await api('GET','/api/stats').catch(()=>null);
+  if(r?.ok){sessionStorage.setItem('devPass',p);document.getElementById('ls').style.display='none';document.getElementById('app').style.display='block';loadAll();}
+  else{DEV_PASS='';document.getElementById('le').textContent='كلمة المرور غير صحيحة';document.getElementById('devPI').value='';}
+}
+function logout(){sessionStorage.removeItem('devPass');DEV_PASS='';document.getElementById('app').style.display='none';document.getElementById('ls').style.display='flex';document.getElementById('devPI').value='';}
+
+function init(){
+  const p=sessionStorage.getItem('devPass');
+  if(!p){document.getElementById('ls').style.display='flex';return;}
+  DEV_PASS=p;
+  document.getElementById('ls').style.display='none';
+  document.getElementById('app').style.display='block';
+  loadAll();
+}
+function loadAll(){renderStats();renderList();}
+
+async function renderStats(){
+  const r=await api('GET','/api/stats').catch(()=>null);
+  if(!r?.ok) return;
+  document.getElementById('stTotal').textContent=r.total;
+  document.getElementById('stActive').textContent=r.active;
+  document.getElementById('stExpiring').textContent=r.expiring;
+  document.getElementById('stDisabled').textContent=(r.disabled||0)+(r.expired||0);
+}
+
+async function renderList(){
+  const r=await api('GET','/api/licenses').catch(()=>null);
+  const el=document.getElementById('restList');
+  if(!r?.ok){el.innerHTML='<div style="color:var(--red-l);text-align:center;padding:2rem">تعذّر التحميل</div>';return;}
+  const db=r.data||[];
+  if(!db.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem">لا يوجد مطاعم مسجّلة بعد</div>';return;}
+  const now=new Date();
+  el.innerHTML=db.map(rec=>{
+    const exp=new Date(rec.expiry), days=Math.ceil((exp-now)/864e5);
+    const isActive=!rec.disabled&&exp>now, isExpiring=isActive&&days<=7, isExpired=!rec.disabled&&exp<=now;
+    const cls=rec.disabled?'disabled':isExpiring?'expiring':'active';
+    const badge=rec.disabled?`<span class="badge b-red">⏸ موقوف</span>`:isExpired?`<span class="badge b-red">❌ منتهي</span>`:isExpiring?`<span class="badge b-gold">⚠️ ${days} يوم</span>`:`<span class="badge b-green">✅ ${days} يوم</span>`;
+    const typeLbl={daily:'يومي',monthly:'شهري','2months':'شهرين','3months':'3 أشهر','6months':'6 أشهر',yearly:'سنوي'}[rec.type]||rec.type;
+    return `
+    <div class="rest-card ${cls}">
+      <div class="rc-head">
+        <div><div class="rc-name">${rec.client}</div><div class="rc-rid">rid: ${rec.rid} | user: ${rec.username||'—'}</div></div>
+        <div class="rc-badges">${badge}<span class="badge b-blue">${typeLbl}</span></div>
+      </div>
+      <div class="rc-info">
+        <span>📱 <strong>${rec.phone||'—'}</strong></span>
+        <span>📅 ينتهي: <strong>${exp.toLocaleDateString('ar-IQ')}</strong></span>
+        ${rec.note?`<span>📝 <strong>${rec.note}</strong></span>`:''}
+      </div>
+      <div class="rc-actions">
+        <button class="btn ${rec.disabled?'btn-toggle-on':'btn-toggle-off'}" onclick="toggle('${rec.rid}')">${rec.disabled?'▶️ تشغيل':'⏸ إيقاف'}</button>
+        <button class="btn btn-renew" onclick="openRenew('${rec.rid}','${rec.client}')">🔄 تجديد</button>
+        <button class="btn btn-ghost" onclick="openAdmin('${rec.rid}')">🔗 لوحة الأدمن</button>
+        <button class="btn btn-del" onclick="delRec('${rec.rid}','${rec.client}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addRestaurant(){
+  const client=document.getElementById('fClient').value.trim();
+  const rid=document.getElementById('fRid').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const username=document.getElementById('fUser').value.trim().toLowerCase();
+  const password=document.getElementById('fPass').value;
+  const phone=document.getElementById('fPhone').value.trim();
+  const type=document.getElementById('fType').value;
+  const note=document.getElementById('fNote').value.trim();
+  if(!client){toast('أدخل اسم المطعم','#f85149');return;}
+  if(!rid){toast('أدخل معرّف المطعم','#f85149');return;}
+  if(!/^[a-z0-9_]+$/.test(rid)){toast('المعرّف: أحرف إنجليزية وأرقام فقط','#f85149');return;}
+  if(!username){toast('أدخل اسم المستخدم','#f85149');return;}
+  if(!password||password.length<6){toast('كلمة المرور 6 أحرف على الأقل','#f85149');return;}
+  const r=await api('POST','/api/generate',{client,rid,username,password,phone,type,note});
+  if(!r.ok){toast('❌ '+r.msg,'#f85149');return;}
+  const exp=new Date(r.rec.expiry), days=Math.ceil((exp-new Date())/864e5);
+  const adminUrl=`${SRV}/admin.html`;
+  const menuUrl=`${SRV}/index.html?rid=${rid}`;
+  document.getElementById('resultKey').textContent='';
+  document.getElementById('resultInfo').innerHTML=`
+    <strong>اسم المطعم:</strong> ${r.rec.client}<br>
+    <strong>المعرّف:</strong> ${r.rec.rid}<br>
+    <strong>اسم المستخدم:</strong> <code>${r.rec.username}</code><br>
+    <strong>الاشتراك:</strong> ${days} يوم — حتى ${exp.toLocaleDateString('ar-IQ')}<br><br>
+    <strong>🔗 رابط المنيو:</strong> <code>${menuUrl}</code><br>
+    <strong>⚙️ لوحة الأدمن:</strong> <code>${adminUrl}</code><br><br>
+    <em style="color:#6b7280">أرسل هذه البيانات لصاحب المطعم</em>`;
+  document.getElementById('resultBox').style.display='block';
+  ['fClient','fRid','fUser','fPass','fPhone','fNote'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ تم إنشاء الحساب!');
+  loadAll();
+}
+
+async function toggle(rid){
+  const r=await api('POST','/api/toggle',{rid});
+  if(!r.ok){toast('❌ '+r.msg,'#f85149');return;}
+  toast(r.disabled?`⏸ تم إيقاف ${r.client}`:`▶️ تم تشغيل ${r.client}`);
+  renderList(); renderStats();
+}
+function openRenew(rid,name){_renewRid=rid;document.getElementById('renewName').textContent='تجديد: '+name;document.getElementById('renewModal').classList.add('open');}
+function closeModal(){document.getElementById('renewModal').classList.remove('open');}
+async function confirmRenew(){
+  const type=document.getElementById('renewType').value;
+  const r=await api('POST','/api/renew',{rid:_renewRid,type});
+  closeModal();
+  if(!r.ok){toast('❌ '+r.msg,'#f85149');return;}
+  const days=Math.ceil((new Date(r.rec.expiry)-new Date())/864e5);
+  toast(`✅ تم التجديد — ${r.rec.client} (${days} يوم)`);
+  renderList(); renderStats();
+}
+async function delRec(rid,name){
+  if(!confirm(`حذف ${name}؟\nلا يمكن التراجع.`)) return;
+  await api('POST','/api/delete-license',{rid});
+  toast('🗑️ تم الحذف'); renderList(); renderStats();
+}
+function openAdmin(rid){window.open(`${SRV}/admin.html`,'_blank');}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('📋 تم النسخ'));}
+function switchTab(name,btn){
+  ['list','add','settings','backup'].forEach(t=>document.getElementById('tab-'+t).style.display=t===name?'block':'none');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(name==='list') renderList();
+}
+function chPass(){
+  const p1=document.getElementById('np1').value,p2=document.getElementById('np2').value,pm=document.getElementById('pm');
+  if(p1.length<6){pm.style.color='var(--red-l)';pm.textContent='6 أحرف على الأقل';return;}
+  if(p1!==p2){pm.style.color='var(--red-l)';pm.textContent='كلمتا المرور غير متطابقتين';return;}
+  pm.style.color='var(--gold-l)';pm.textContent='⚠️ لتطبيق التغيير: غيّر DEV_PASS في Railway → Variables';
+}
+let _tt;
+function toast(msg,c){const el=document.getElementById('toast');el.textContent=msg;el.style.background=c||'#1f2937';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2800);}
+async function exportBackup(){
+  try{
+    const r=await fetch(`${SRV}/api/backup`,{headers:{'X-Dev-Pass':DEV_PASS}});
+    if(!r.ok){toast('❌ فشل التصدير','#f85149');return;}
+    const blob=await r.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`altaei-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    toast('✅ تم تحميل النسخة الاحتياطية');
+  }catch(e){toast('❌ '+e.message,'#f85149');}
+}
+
+async function importBackup(input){
+  const file=input.files[0]; if(!file) return;
+  if(!confirm('⚠️ سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟')) return;
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(!data.licenses){toast('❌ ملف غير صالح','#f85149');return;}
+    const r=await api('POST','/api/restore',data);
+    if(r.ok){
+      toast(`✅ تمت الاستعادة: ${r.restored.licenses} اشتراك، ${r.restored.restaurants} مطعم`);
+      loadAll();
+    } else toast('❌ '+r.msg,'#f85149');
+  }catch(e){toast('❌ '+e.message,'#f85149');}
+  input.value='';
+}
+
+init();
+</script>
+</body>
+</html>
