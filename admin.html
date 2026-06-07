@@ -1225,27 +1225,6 @@ function toggleAutoPrint(){
     btn.style.color=autoPrint?'var(--green)':'var(--muted)';
   }
   toast(autoPrint?'✅ الطباعة التلقائية مفعّلة':'⏸ الطباعة التلقائية موقوفة');
-  
-  async function doLogin() {
-    const user = document.getElementById('loginUser').value;
-    const pass = document.getElementById('loginPass').value;
-    try {
-        const response = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, password: pass })
-        });
-        const result = await response.json();
-        if (result.ok) {
-            // قم بتوجيه المستخدم أو تحديث الواجهة هنا
-            alert('تم تسجيل الدخول بنجاح');
-        } else {
-            alert('خطأ: ' + result.msg);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 }
 </script>
 </body>
